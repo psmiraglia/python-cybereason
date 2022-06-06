@@ -20,7 +20,23 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
+import argparse
+import json
+import logging
+import os
+import sys
+
 from pycybereason import version
+from pycybereason.actions import SensorsActions
+from pycybereason.api import Cybereason
+
+# setup logging
+sh = logging.StreamHandler()
+sh.setLevel(logging.DEBUG)
+sh.setFormatter(logging.Formatter('[%(name)s][%(levelname)5.5s] %(message)s'))
+LOG = logging.getLogger(__name__)
+LOG.setLevel(logging.DEBUG)
+LOG.addHandler(sh)
 
 
 def logo():
@@ -37,7 +53,82 @@ def logo():
  ''')  # noqa
 
 
+def parse_cfg_file(cfg_file):
+    cfg = {}
+    if not os.path.exists(cfg_file):
+        LOG.error(f'{cfg_file} not found')
+        sys.exit(1)
+    else:
+        with open(cfg_file, 'r') as fp:
+            cfg = json.load(fp)
+            fp.close()
+    return cfg
+
+
 if __name__ == '__main__':
     logo()
+
+    parser = argparse.ArgumentParser()
+
+    # connection parameters
+    parser.add_argument('-s', '--server', default=None)
+    parser.add_argument('-u', '--username', default=None)
+    parser.add_argument('-p', '--password', default=None)
+    parser.add_argument('-c', '--conf', default=None)
+
+    # subcommands
+    subparsers = parser.add_subparsers(dest='subcommand')
+    sensors = subparsers.add_parser('sensors')
+
+    # sensors action: query
+    sensors.add_argument('--query', action='store_true')
+    sensors.add_argument('--filters', default=None)
+
+    # sensors action: get logs
+    sensors.add_argument('--get-logs', action='store_true')
+    sensors.add_argument('--sensors', nargs='+', default=None)
+
+    # parse arguments
+    args = parser.parse_args()
+
+    # parse connection settings
+    server = args.server
+    username = args.username
+    password = args.password
+    if args.conf:
+        cfg = parse_cfg_file(args.conf)
+        if 'server' in cfg:
+            server = cfg['server']
+        if 'username' in cfg:
+            username = cfg['username']
+        if 'password' in cfg:
+            password = cfg['password']
+
+    if not server:
+        LOG.error('server is missing')
+        sys.exit(1)
+
+    if not username:
+        LOG.error('username is missing')
+        sys.exit(1)
+
+    if not password:
+        LOG.error('password is missing')
+        sys.exit(1)
+
+    # init api
+    with Cybereason(server, username=username, password=password) as api:
+        if args.subcommand == 'sensors':
+            if args.query:
+                filters = args.filters
+                a = SensorsActions(api)
+                a.query(filters)
+            if args.get_logs:
+                sensors = args.sensors
+                LOG.info(f'Getting logs for sensors: {sensors}')
+        else:
+            LOG.error(f'Invalid subcommand ({args.subcommand})')
+            sys.exit(1)
+    sys.exit(0)
 
 # vim: ft=python
