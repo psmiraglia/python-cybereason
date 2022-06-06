@@ -65,6 +65,31 @@ def parse_cfg_file(cfg_file):
     return cfg
 
 
+def _filters(filters):
+    f = None
+
+    try:
+        if filters.startswith('@'):
+            # load filters from file
+            ffile = filters[1:]
+            if not os.path.exists(ffile):
+                LOG.error(f'{ffile} does not exist')
+            else:
+                LOG.debug(f'Load filters from file ({ffile})')
+                with open(ffile, 'r') as fp:
+                    f = json.load(fp)
+                    fp.close()
+        else:
+            # load filters from string
+            LOG.debug(f'Load filters from string ({filters})')
+            f = json.loads(filters)
+    except Exception as e:
+        LOG.error(f'Unable to load filters: {e}')
+        sys.exit(1)
+
+    return f
+
+
 if __name__ == '__main__':
     logo()
 
@@ -120,7 +145,7 @@ if __name__ == '__main__':
     with Cybereason(server, username=username, password=password) as api:
         if args.subcommand == 'sensors':
             if args.query:
-                filters = args.filters
+                filters = _filters(args.filters)
                 a = SensorsActions(api)
                 a.query(filters)
             if args.get_logs:
