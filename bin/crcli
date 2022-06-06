@@ -93,28 +93,28 @@ def _filters(filters):
 if __name__ == '__main__':
     logo()
 
-    parser = argparse.ArgumentParser()
+    # crcli <options> <subcommand>
+    root_parser = argparse.ArgumentParser()
+    root_parser.add_argument('-s', '--server', default=None)
+    root_parser.add_argument('-u', '--username', default=None)
+    root_parser.add_argument('-p', '--password', default=None)
+    root_parser.add_argument('-c', '--conf', default=None)
+    subcommand = root_parser.add_subparsers(dest='subcommand')
 
-    # connection parameters
-    parser.add_argument('-s', '--server', default=None)
-    parser.add_argument('-u', '--username', default=None)
-    parser.add_argument('-p', '--password', default=None)
-    parser.add_argument('-c', '--conf', default=None)
-
-    # subcommands
-    subparsers = parser.add_subparsers(dest='subcommand')
-    sensors = subparsers.add_parser('sensors')
-
-    # sensors action: query
-    sensors.add_argument('--query', action='store_true')
-    sensors.add_argument('--filters', default=None)
-
-    # sensors action: get logs
-    sensors.add_argument('--get-logs', action='store_true')
-    sensors.add_argument('--sensors', nargs='+', default=None)
+    # sensors <sensor_action> <options>
+    sensors_module = subcommand.add_parser('sensors')
+    sensors_action = sensors_module.add_subparsers(dest='sensors_action')
+    # sensors query <options>
+    sensors_query = sensors_action.add_parser('query')
+    sensors_query.add_argument('--filters')
+    sensors_query.add_argument('--out-file')
+    # sensors logs <opions>
+    sensors_logs = sensors_action.add_parser('logs')
+    sensors_logs.add_argument('--sensors', nargs='+', default=None)
+    sensors_logs.add_argument('--out-file')
 
     # parse arguments
-    args = parser.parse_args()
+    args = root_parser.parse_args()
 
     # parse connection settings
     server = args.server
@@ -144,11 +144,11 @@ if __name__ == '__main__':
     # init api
     with Cybereason(server, username=username, password=password) as api:
         if args.subcommand == 'sensors':
-            if args.query:
+            if args.sensors_action == 'query':
                 filters = _filters(args.filters)
                 a = SensorsActions(api)
                 a.query(filters)
-            if args.get_logs:
+            elif args.sensors_action == 'logs':
                 sensors = args.sensors
                 LOG.info(f'Getting logs for sensors: {sensors}')
         else:
