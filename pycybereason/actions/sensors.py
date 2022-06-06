@@ -20,6 +20,7 @@
 
 import json
 import logging
+import os
 
 # setup logging
 sh = logging.StreamHandler()
@@ -35,7 +36,29 @@ class SensorsActions(object):
         self.api = api
 
     def query(self, filters):
-        f = json.loads(filters)
+        f = None
+
+        try:
+            if filters.startswith('@'):
+                # load filters from file
+                ffile = filters[1:]
+                if not os.path.exists(ffile):
+                    LOG.error(f'{ffile} does not exist')
+                else:
+                    LOG.debug(f'Load filters from file ({ffile})')
+                    with open(ffile, 'r') as fp:
+                        f = json.load(fp)
+                        fp.close()
+            else:
+                # load filters from string
+                LOG.debug(f'Load filters from string ({filters})')
+                f = json.loads(filters)
+        except Exception as e:
+            LOG.warn(e)
+
+        if not f:
+            raise Exception(f'Unable to load filters from "{filters}"')
+
         sensors = self.api.sensors.query(f)
         for s in sensors:
             LOG.info(f'Sensor: {s["machineName"]}')

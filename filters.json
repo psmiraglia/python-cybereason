@@ -1,0 +1,12 @@
+[
+  {
+    "fieldName":"status",
+    "operator":"EqualsIgnoreCase",
+    "values":["Stale"]
+  },
+  {
+    "fieldName":"machineName",
+    "operator":"ContainsIgnoreCase",
+    "values":["sql"]
+  }
+]
