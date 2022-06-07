@@ -53,7 +53,7 @@ def logo():
  ''')  # noqa
 
 
-def parse_cfg_file(cfg_file):
+def _parse_cfg_file(cfg_file):
     cfg = {}
     if not os.path.exists(cfg_file):
         LOG.error(f'{cfg_file} not found')
@@ -90,6 +90,44 @@ def _filters(filters):
     return f
 
 
+def parse_connection_options(args):
+    opts = {}
+    keys = ['server', 'username', 'password']
+
+    # read from options
+    for k in keys:
+        value = getattr(args, k)
+        if value:
+            LOG.debug(f'Reading {k} from switch: --{k}')
+            opts[k] = value
+
+    # read from config file
+    if args.conf:
+        cfg = _parse_cfg_file(args.conf)
+        for k in keys:
+            if k in cfg:
+                LOG.debug(f'Reading {k} from file: {args.conf}')
+                opts[k] = cfg[k]
+
+    # read from envvar
+    for k in keys:
+        envvar = f'CRCLI_{k.upper()}'
+        if envvar in os.environ:
+            LOG.debug(f'Reading {k} from envvar: {envvar}')
+            opts[k] = os.getenv(envvar)
+
+    # check values
+    for o in keys:
+        if o not in opts:
+            LOG.error(f'Option is missing: {o}')
+            sys.exit(1)
+        if not opts[o]:
+            LOG.error(f'Option must have a value: {o}')
+            sys.exit(1)
+
+    return opts
+
+
 if __name__ == '__main__':
     logo()
 
@@ -116,33 +154,13 @@ if __name__ == '__main__':
     # parse arguments
     args = root_parser.parse_args()
 
-    # parse connection settings
-    server = args.server
-    username = args.username
-    password = args.password
-    if args.conf:
-        cfg = parse_cfg_file(args.conf)
-        if 'server' in cfg:
-            server = cfg['server']
-        if 'username' in cfg:
-            username = cfg['username']
-        if 'password' in cfg:
-            password = cfg['password']
-
-    if not server:
-        LOG.error('server is missing')
-        sys.exit(1)
-
-    if not username:
-        LOG.error('username is missing')
-        sys.exit(1)
-
-    if not password:
-        LOG.error('password is missing')
-        sys.exit(1)
+    # parse connection options
+    c_opts = parse_connection_options(args)
 
     # init api
-    with Cybereason(server, username=username, password=password) as api:
+    with Cybereason(c_opts['server'],
+                    username=c_opts['username'],
+                    password=c_opts['password']) as api:
         if args.subcommand == 'sensors':
             if args.sensors_action == 'query':
                 filters = _filters(args.filters)
