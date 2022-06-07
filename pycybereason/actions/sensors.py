@@ -19,6 +19,9 @@
 # SOFTWARE.
 
 import logging
+from typing import Dict, List
+
+import pycybereason.api.cybereason
 
 # setup logging
 sh = logging.StreamHandler()
@@ -30,10 +33,10 @@ LOG.addHandler(sh)
 
 
 class SensorsActions(object):
-    def __init__(self, api):
+    def __init__(self, api: pycybereason.api.cybereason.Cybereason):
         self.api = api
 
-    def query(self, filters):
+    def query(self, filters: Dict = None) -> List[Dict]:
         sensors = self.api.sensors.query(filters)
         for s in sensors:
             LOG.info(f'Sensor: {s["machineName"]}')

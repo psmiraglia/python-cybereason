@@ -19,6 +19,7 @@
 # IN THE SOFTWARE.
 
 import logging
+from typing import Dict, List
 
 from restfly.endpoint import APIEndpoint
 
@@ -34,7 +35,7 @@ LOG.addHandler(sh)
 class Sensors(APIEndpoint):
     _path = 'rest/sensors'
 
-    def query(self, filters=None):
+    def query(self, filters: Dict = None) -> List[Dict]:
         sensors = []
         offset = 0
         limit = 500

@@ -25,6 +25,7 @@ import json
 import logging
 import os
 import sys
+from typing import Dict
 
 from pycybereason import version
 from pycybereason.actions import SensorsActions
@@ -53,7 +54,7 @@ def logo():
  ''')  # noqa
 
 
-def _parse_cfg_file(cfg_file):
+def _parse_cfg_file(cfg_file: str) -> Dict:
     cfg = {}
     if not os.path.exists(cfg_file):
         LOG.error(f'{cfg_file} not found')
@@ -65,7 +66,7 @@ def _parse_cfg_file(cfg_file):
     return cfg
 
 
-def _filters(filters):
+def _filters(filters: str) -> Dict:
     f = None
 
     try:
@@ -90,7 +91,7 @@ def _filters(filters):
     return f
 
 
-def parse_connection_options(args):
+def parse_connection_options(args: argparse.Namespace) -> Dict:
     opts = {}
     keys = ['server', 'username', 'password']
 
