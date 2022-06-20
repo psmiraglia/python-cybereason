@@ -30,6 +30,7 @@ from typing import Dict
 from pycybereason import version
 from pycybereason.actions import SensorsActions
 from pycybereason.api import Cybereason
+from pycybereason.app import PoliciesSubcommand
 
 # setup logging
 sh = logging.StreamHandler()
@@ -130,9 +131,9 @@ def parse_connection_options(args: argparse.Namespace) -> Dict:
 
 
 def do_policies(args: argparse.Namespace, api: Cybereason) -> None:
+    cmd = PoliciesSubcommand(api)
     if args.policies_action == 'list':
-        for p in api.policies.list():
-            print(f'[*] {p["name"]} ({p["id"]})')
+        cmd.list()
     else:
         LOG.error(f'Unknown action: {args.policies_action}')
 
