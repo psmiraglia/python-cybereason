@@ -11,3 +11,6 @@ isort:
 
 install:
 	pip install .
+
+venv37:
+	virtualenv -p python3.7 .venv
