@@ -129,6 +129,14 @@ def parse_connection_options(args: argparse.Namespace) -> Dict:
     return opts
 
 
+def do_policies(args: argparse.Namespace) -> None:
+    if args.policies_action == 'list':
+        for p in api.policies.list():
+            print(f'[*] {p["name"]} ({p["id"]})')
+    else:
+        LOG.error(f'Unknown action: {args.policies_action}')
+
+
 if __name__ == '__main__':
     logo()
 
@@ -152,6 +160,13 @@ if __name__ == '__main__':
     sensors_logs.add_argument('--sensors', nargs='+', default=None)
     sensors_logs.add_argument('--out-file')
 
+    # policies <action> <options>
+    policies_module = subcommand.add_parser('policies')
+    policies_action = policies_module.add_subparsers(dest='policies_action')
+    # policies list <options>
+    policies_list = policies_action.add_parser('list')
+    policies_list.add_argument('--out-file')
+
     # parse arguments
     args = root_parser.parse_args()
 
@@ -170,6 +185,8 @@ if __name__ == '__main__':
             elif args.sensors_action == 'logs':
                 sensors = args.sensors
                 LOG.info(f'Getting logs for sensors: {sensors}')
+        elif args.subcommand == 'policies':
+            do_policies(args)
         else:
             LOG.error(f'Invalid subcommand ({args.subcommand})')
             sys.exit(1)
