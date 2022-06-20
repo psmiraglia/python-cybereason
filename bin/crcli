@@ -129,12 +129,24 @@ def parse_connection_options(args: argparse.Namespace) -> Dict:
     return opts
 
 
-def do_policies(args: argparse.Namespace) -> None:
+def do_policies(args: argparse.Namespace, api: Cybereason) -> None:
     if args.policies_action == 'list':
         for p in api.policies.list():
             print(f'[*] {p["name"]} ({p["id"]})')
     else:
         LOG.error(f'Unknown action: {args.policies_action}')
+
+
+def do_sensors(args: argparse.Namespace, api: Cybereason) -> None:
+    if args.sensors_action == 'query':
+        filters = _filters(args.filters)
+        a = SensorsActions(api)
+        a.query(filters)
+    elif args.sensors_action == 'logs':
+        sensors = args.sensors
+        LOG.info(f'Getting logs for sensors: {sensors}')
+    else:
+        LOG.error(f'Unknown action: {args.sensors_action}')
 
 
 if __name__ == '__main__':
@@ -178,15 +190,9 @@ if __name__ == '__main__':
                     username=c_opts['username'],
                     password=c_opts['password']) as api:
         if args.subcommand == 'sensors':
-            if args.sensors_action == 'query':
-                filters = _filters(args.filters)
-                a = SensorsActions(api)
-                a.query(filters)
-            elif args.sensors_action == 'logs':
-                sensors = args.sensors
-                LOG.info(f'Getting logs for sensors: {sensors}')
+            do_sensors(args, api)
         elif args.subcommand == 'policies':
-            do_policies(args)
+            do_policies(args, api)
         else:
             LOG.error(f'Invalid subcommand ({args.subcommand})')
             sys.exit(1)
