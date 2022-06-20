@@ -22,6 +22,7 @@ import logging
 
 from restfly.session import APISession
 
+from pycybereason.api.policies import Policies
 from pycybereason.api.sensors import Sensors
 
 # setup logging
@@ -54,3 +55,7 @@ class Cybereason(APISession):
     @property
     def sensors(self):
         return Sensors(self)
+
+    @property
+    def policies(self):
+        return Policies(self)
