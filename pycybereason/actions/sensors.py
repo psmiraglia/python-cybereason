@@ -24,12 +24,7 @@ from typing import Dict, List
 import pycybereason.api.cybereason
 
 # setup logging
-sh = logging.StreamHandler()
-sh.setLevel(logging.DEBUG)
-sh.setFormatter(logging.Formatter('[%(name)s/%(levelname)5.5s] %(message)s'))
 LOG = logging.getLogger(__name__)
-LOG.setLevel(logging.DEBUG)
-LOG.addHandler(sh)
 
 
 class SensorsActions(object):

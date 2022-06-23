@@ -32,13 +32,7 @@ from pycybereason.actions import SensorsActions
 from pycybereason.api import Cybereason
 from pycybereason.app import PoliciesSubcommand
 
-# setup logging
-sh = logging.StreamHandler()
-sh.setLevel(logging.DEBUG)
-sh.setFormatter(logging.Formatter('[%(name)s][%(levelname)5.5s] %(message)s'))
 LOG = logging.getLogger(__name__)
-LOG.setLevel(logging.DEBUG)
-LOG.addHandler(sh)
 
 
 def logo():
@@ -188,6 +182,12 @@ if __name__ == '__main__':
 
     # parse arguments
     args = root_parser.parse_args()
+
+    # setup logging
+    logging.basicConfig(
+        level=getattr(logging, os.getenv('CRCLI_LOG_LEVEL', 'DEBUG')),
+        format='%(levelname)s: %(name)s: %(message)s'
+    )
 
     # parse connection options
     c_opts = parse_connection_options(args)

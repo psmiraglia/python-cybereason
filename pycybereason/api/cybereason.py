@@ -26,12 +26,7 @@ from pycybereason.api.policies import Policies
 from pycybereason.api.sensors import Sensors
 
 # setup logging
-sh = logging.StreamHandler()
-sh.setLevel(logging.DEBUG)
-sh.setFormatter(logging.Formatter('[%(name)s][%(levelname)5.5s] %(message)s'))
 LOG = logging.getLogger(__name__)
-LOG.setLevel(logging.DEBUG)
-LOG.addHandler(sh)
 
 
 class Cybereason(APISession):
