@@ -18,6 +18,17 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
+import json
+import logging
+
+# setup logging
+sh = logging.StreamHandler()
+sh.setLevel(logging.DEBUG)
+sh.setFormatter(logging.Formatter('[%(name)s][%(levelname)5.5s] %(message)s'))
+LOG = logging.getLogger(__name__)
+LOG.setLevel(logging.DEBUG)
+LOG.addHandler(sh)
+
 
 class PoliciesSubcommand(object):
 
@@ -27,3 +38,16 @@ class PoliciesSubcommand(object):
     def list(self) -> None:
         for p in self.api.policies.list():
             print(f'[*] {p["name"]} ({p["id"]})')
+
+    def dump(self, policy_id: str, out_file: str = None) -> None:
+        dump = self.api.policies.dump(policy_id)
+
+        _out_file = f'policy-{policy_id}.json'
+        if out_file:
+            _out_file = out_file
+
+        with open(_out_file, 'w') as fp:
+            json.dump(dump, fp, sort_keys=True, indent=4)
+            fp.close()
+
+        LOG.info(f'Policy dump saved: {_out_file}')

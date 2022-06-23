@@ -134,6 +134,8 @@ def do_policies(args: argparse.Namespace, api: Cybereason) -> None:
     cmd = PoliciesSubcommand(api)
     if args.policies_action == 'list':
         cmd.list()
+    elif args.policies_action == 'dump':
+        cmd.dump(args.policy_id, args.out_file)
     else:
         LOG.error(f'Unknown action: {args.policies_action}')
 
@@ -179,6 +181,10 @@ if __name__ == '__main__':
     # policies list <options>
     policies_list = policies_action.add_parser('list')
     policies_list.add_argument('--out-file')
+    # policies dump <options>
+    policies_dump = policies_action.add_parser('dump')
+    policies_dump.add_argument('--policy-id', required=True)
+    policies_dump.add_argument('--out-file')
 
     # parse arguments
     args = root_parser.parse_args()

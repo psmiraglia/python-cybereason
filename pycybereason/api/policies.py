@@ -42,3 +42,6 @@ class Policies(APIEndpoint):
             policies += resp['policies']
         LOG.debug(f'Fetched {len(policies)}/{resp["total"]} policies')
         return policies
+
+    def dump(self, policy_id: str) -> Dict:
+        return self._get(policy_id).json()
