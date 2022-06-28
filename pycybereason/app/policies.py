@@ -46,3 +46,42 @@ class PoliciesSubcommand(object):
             fp.close()
 
         LOG.info(f'Policy dump saved: {_out_file}')
+
+    def compare(self, a: str, b: str) -> None:
+        def _compare(a, a_label, b, b_label, keys, res):
+            has_nested_keys = False
+            for k in a:
+                # skip list
+                if k in ['metadata', 'notes', 'description', 'name']:
+                    continue
+
+                if not isinstance(a[k], dict):  # we are in a leaf...
+                    values_are_different = False
+                    if isinstance(a[k], list):
+                        values_are_different = (len(a[k]) != len(b[k]))
+                    else:
+                        values_are_different = (a[k] != b[k])
+                    if values_are_different:
+                        res['.'.join(keys+[k])] = {a_label: a[k], b_label: b[k]}
+                else:  # go deep...
+                    has_nested_keys = True
+                    new_keys, new_res = _compare(a[k], a_label, b[k], b_label, keys+[k], res)
+
+            if not has_nested_keys:
+                return keys, res
+            return new_keys, new_res
+
+        pol_a = self.api.policies.dump(a)
+        pol_a_label = pol_a['metadata']['name']
+
+        pol_b = self.api.policies.dump(b)
+        pol_b_label = pol_b['metadata']['name']
+
+        keys, res = _compare(pol_a, pol_a_label,
+                             pol_b, pol_b_label,
+                             [], {})
+
+        for k in res:
+            print(f'----- {k} -----\n')
+            print(f'>> {pol_a_label} <<\n\n{json.dumps(res[k][pol_a_label], indent=2, sort_keys=True)}\n')
+            print(f'>> {pol_b_label} <<\n\n{json.dumps(res[k][pol_b_label], indent=2, sort_keys=True)}\n')
