@@ -48,6 +48,7 @@ class PoliciesSubcommand(object):
         LOG.info(f'Policy dump saved: {_out_file}')
 
     def compare(self, a: str, b: str) -> None:
+        # recursive comparison
         def _compare(a, a_label, b, b_label, keys, res):
             has_nested_keys = False
             for k in a:
@@ -71,16 +72,26 @@ class PoliciesSubcommand(object):
                 return keys, res
             return new_keys, new_res
 
+        # get configuration for policy a...
         pol_a = self.api.policies.dump(a)
+        if not pol_a:
+            LOG.error(f'Unable to get configuration for policy: {a}')
+            return
         pol_a_label = pol_a['metadata']['name']
 
+        # get configuration for policy b...
         pol_b = self.api.policies.dump(b)
+        if not pol_b:
+            LOG.error(f'Unable to get configuration for policy: {b}')
+            return
         pol_b_label = pol_b['metadata']['name']
 
+        # compare a and b policies
         keys, res = _compare(pol_a, pol_a_label,
                              pol_b, pol_b_label,
                              [], {})
 
+        # print the result
         for k in res:
             print(f'----- {k} -----\n')
             print(f'>> {pol_a_label} <<\n\n{json.dumps(res[k][pol_a_label], indent=2, sort_keys=True)}\n')
