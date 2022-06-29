@@ -47,7 +47,7 @@ class PoliciesSubcommand(object):
 
         LOG.info(f'Policy dump saved: {_out_file}')
 
-    def compare(self, a: str = None, b: str = None) -> None:
+    def compare(self, a: str = None, b: str = None, out_file: str = None) -> None:
         # recursive comparison
         def _compare(a, a_label, b, b_label, keys, res):
             has_nested_keys = False
@@ -135,8 +135,16 @@ class PoliciesSubcommand(object):
                              pol_b, pol_b_label,
                              [], {})
 
-        # print the result
-        for k in res:
-            print(f'----- {k} -----\n')
-            print(f'>> {pol_a_label} <<\n\n{json.dumps(res[k][pol_a_label], indent=2, sort_keys=True)}\n')
-            print(f'>> {pol_b_label} <<\n\n{json.dumps(res[k][pol_b_label], indent=2, sort_keys=True)}\n')
+        # save result
+        _out_file = f'compare-{pol_a_id}--{pol_b_id}.txt'
+        if out_file:
+            _out_file = out_file
+
+        with open(_out_file, 'w') as fp:
+            for k in res:
+                fp.write(f'----- {k} -----\n\n')
+                fp.write(f'>> {pol_a_label} <<\n\n{json.dumps(res[k][pol_a_label], indent=2, sort_keys=True)}\n\n')
+                fp.write(f'>> {pol_b_label} <<\n\n{json.dumps(res[k][pol_b_label], indent=2, sort_keys=True)}\n\n')
+            fp.close()
+
+        print(f'\nComparison saved to {_out_file}')

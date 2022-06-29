@@ -131,7 +131,7 @@ def do_policies(args: argparse.Namespace, api: Cybereason) -> None:
     elif args.policies_action == 'dump':
         cmd.dump(args.policy_id, args.out_file)
     elif args.policies_action == 'compare':
-        cmd.compare(args.a, args.b)
+        cmd.compare(args.a, args.b, args.out_file)
     else:
         LOG.error(f'Unknown action: {args.policies_action}')
 
@@ -185,6 +185,7 @@ if __name__ == '__main__':
     policies_compare = policies_action.add_parser('compare')
     policies_compare.add_argument('-a')
     policies_compare.add_argument('-b')
+    policies_compare.add_argument('-o', '--out-file')
 
     # parse arguments
     args = root_parser.parse_args()
