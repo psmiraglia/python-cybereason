@@ -59,7 +59,7 @@ class PoliciesSubcommand(object):
                 if not isinstance(a[k], dict):  # we are in a leaf...
                     values_are_different = False
                     if isinstance(a[k], list):
-                        values_are_different = (len(a[k]) != len(b[k]))
+                        values_are_different = ([i for i in a[k] if i not in b[k]] != [])  # noqa
                     else:
                         values_are_different = (a[k] != b[k])
                     if values_are_different:
