@@ -47,7 +47,7 @@ class PoliciesSubcommand(object):
 
         LOG.info(f'Policy dump saved: {_out_file}')
 
-    def compare(self, a: str = None, b: str = None, out_file: str = None) -> None:
+    def compare(self, a: str = None, b: str = None, out_file: str = None) -> None:  # noqa
         # recursive comparison
         def _compare(a, a_label, b, b_label, keys, res):
             has_nested_keys = False
@@ -63,10 +63,13 @@ class PoliciesSubcommand(object):
                     else:
                         values_are_different = (a[k] != b[k])
                     if values_are_different:
-                        res['.'.join(keys+[k])] = {a_label: a[k], b_label: b[k]}
+                        res['.'.join(keys+[k])] = {a_label: a[k],
+                                                   b_label: b[k]}
                 else:  # go deep...
                     has_nested_keys = True
-                    new_keys, new_res = _compare(a[k], a_label, b[k], b_label, keys+[k], res)
+                    new_keys, new_res = _compare(a[k], a_label,
+                                                 b[k], b_label,
+                                                 keys+[k], res)
 
             if not has_nested_keys:
                 return keys, res
@@ -79,8 +82,9 @@ class PoliciesSubcommand(object):
             for k in policies:
                 print(f'({k}) {policies[k]["name"]}')
             try:
-                idx = int(input(f'[?] Select the {prompt} policy (0 - {len(policies)-1}): '))
+                idx = int(input(f'[?] Select the {prompt} policy (0 - {len(policies)-1}): '))  # noqa
             except Exception as e:
+                LOG.warn(e)
                 idx = -1
 
             while idx not in policies:
@@ -88,8 +92,9 @@ class PoliciesSubcommand(object):
                 for k in policies:
                     print(f'({k}) {policies[k]["name"]}')
                 try:
-                    idx = int(input(f'[?] Select the {prompt} policy (0 - {len(policies)-1}): '))
+                    idx = int(input(f'[?] Select the {prompt} policy (0 - {len(policies)-1}): '))  # noqa
                 except Exception as e:
+                    LOG.warn(e)
                     idx = -1
 
             return policies[idx]['id']
@@ -143,8 +148,10 @@ class PoliciesSubcommand(object):
         with open(_out_file, 'w') as fp:
             for k in res:
                 fp.write(f'----- {k} -----\n\n')
-                fp.write(f'>> {pol_a_label} <<\n\n{json.dumps(res[k][pol_a_label], indent=2, sort_keys=True)}\n\n')
-                fp.write(f'>> {pol_b_label} <<\n\n{json.dumps(res[k][pol_b_label], indent=2, sort_keys=True)}\n\n')
+                fp.write(f'>> {pol_a_label} <<\n\n')
+                fp.write(f'{json.dumps(res[k][pol_a_label], indent=2, sort_keys=True)}\n\n')  # noqa
+                fp.write(f'>> {pol_b_label} <<\n\n')
+                fp.write(f'{json.dumps(res[k][pol_b_label], indent=2, sort_keys=True)}\n\n')  # noqa
             fp.close()
 
         print(f'\nComparison saved to {_out_file}')
