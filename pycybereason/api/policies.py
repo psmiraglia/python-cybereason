@@ -39,4 +39,9 @@ class Policies(APIEndpoint):
         return policies
 
     def dump(self, policy_id: str) -> Dict:
-        return self._get(policy_id).json()
+        resp = None
+        try:
+            resp = self._get(policy_id).json()
+        except Exception as e:
+            LOG.error(e)
+        return resp
