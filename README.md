@@ -97,3 +97,50 @@ $ CRCLI_LOG_LEVEL=INFO crcli -c conf.json sensors query --filters @filters.json
 INFO: pycybereason.actions.sensors: Sensor: sql03
 INFO: pycybereason.actions.sensors: Sensor: sql12
 ~~~
+
+Compare policies (interactive)
+
+~~~
+$ crcli -c conf.json policies compare
+
+                   _____      _
+                  / ____|    | |
+      _ __  _   _| |    _   _| |__   ___ _ __ ___  __ _ ___  ___  _ __
+     | '_ \| | | | |   | | | | '_ \ / _ \ '__/ _ \/ _` / __|/ _ \| '_ \
+     | |_) | |_| | |___| |_| | |_) |  __/ | |  __/ (_| \__ \ (_) | | | |
+     | .__/ \__, |\_____\__, |_.__/ \___|_|  \___|\__,_|___/\___/|_| |_|
+     | |     __/ |       __/ |
+     |_|    |___/       |___/  v0.1a0
+
+ 
+
+(0) Policy Alpha
+(1) Policy Beta
+(2) Policy Gamma
+[?] Select the A policy (0 - 2): 2
+
+(0) Policy Alpha
+(1) Policy Beta
+(2) Policy Gamma
+[?] Select the B policy (0 - 2): 0
+
+Comparison saved to compare-9034336c-0a4e-4461-b93b-f2153a55ed96--1e798691-4eb7-4f2c-98e8-a5d70c63d79b.txt
+~~~
+
+Compare policies (with options)
+
+~~~
+$ crcli -c conf.json policies compare -a 9034336c-0a4e-4461-b93b-f2153a55ed96 -b 1e798691-4eb7-4f2c-98e8-a5d70c63d79b -o mycompare.txt
+
+                   _____      _
+                  / ____|    | |
+      _ __  _   _| |    _   _| |__   ___ _ __ ___  __ _ ___  ___  _ __
+     | '_ \| | | | |   | | | | '_ \ / _ \ '__/ _ \/ _` / __|/ _ \| '_ \
+     | |_) | |_| | |___| |_| | |_) |  __/ | |  __/ (_| \__ \ (_) | | | |
+     | .__/ \__, |\_____\__, |_.__/ \___|_|  \___|\__,_|___/\___/|_| |_|
+     | |     __/ |       __/ |
+     |_|    |___/       |___/  v0.1a0
+
+ 
+Comparison saved to mycompare.txt
+~~~
