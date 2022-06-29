@@ -47,7 +47,7 @@ class PoliciesSubcommand(object):
 
         LOG.info(f'Policy dump saved: {_out_file}')
 
-    def compare(self, a: str, b: str) -> None:
+    def compare(self, a: str = None, b: str = None) -> None:
         # recursive comparison
         def _compare(a, a_label, b, b_label, keys, res):
             has_nested_keys = False
@@ -72,17 +72,61 @@ class PoliciesSubcommand(object):
                 return keys, res
             return new_keys, new_res
 
+        # select policies
+        def _select_policy(policies, prompt):
+            print('')
+            idx = None
+            for k in policies:
+                print(f'({k}) {policies[k]["name"]}')
+            try:
+                idx = int(input(f'[?] Select the {prompt} policy (0 - {len(policies)-1}): '))
+            except Exception as e:
+                idx = -1
+
+            while idx not in policies:
+                print('\n[!] Invalid policy! Retry...')
+                for k in policies:
+                    print(f'({k}) {policies[k]["name"]}')
+                try:
+                    idx = int(input(f'[?] Select the {prompt} policy (0 - {len(policies)-1}): '))
+                except Exception as e:
+                    idx = -1
+
+            return policies[idx]['id']
+
+        # get policies list (if needed)
+        policies = {}
+        idx = 0
+        if (not a) or (not b):
+            for p in self.api.policies.list():
+                policies[idx] = p
+                idx += 1
+
+        # get id of A policy
+        pol_a_id = None
+        if not a:
+            pol_a_id = _select_policy(policies, 'A')
+        else:
+            pol_a_id = a
+
+        # get id of B policy
+        pol_b_id = None
+        if not b:
+            pol_b_id = _select_policy(policies, 'B')
+        else:
+            pol_b_id = b
+
         # get configuration for policy a...
-        pol_a = self.api.policies.dump(a)
+        pol_a = self.api.policies.dump(pol_a_id)
         if not pol_a:
-            LOG.error(f'Unable to get configuration for policy: {a}')
+            LOG.error(f'Unable to get configuration for policy: {pol_a_id}')
             return
         pol_a_label = pol_a['metadata']['name']
 
         # get configuration for policy b...
-        pol_b = self.api.policies.dump(b)
+        pol_b = self.api.policies.dump(pol_b_id)
         if not pol_b:
-            LOG.error(f'Unable to get configuration for policy: {b}')
+            LOG.error(f'Unable to get configuration for policy: {pol_b_id}')
             return
         pol_b_label = pol_b['metadata']['name']
 

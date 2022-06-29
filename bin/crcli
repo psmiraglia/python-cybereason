@@ -183,15 +183,15 @@ if __name__ == '__main__':
     policies_dump.add_argument('--out-file')
     # policies compare <options>
     policies_compare = policies_action.add_parser('compare')
-    policies_compare.add_argument('-a', required=True)
-    policies_compare.add_argument('-b', required=True)
+    policies_compare.add_argument('-a')
+    policies_compare.add_argument('-b')
 
     # parse arguments
     args = root_parser.parse_args()
 
     # setup logging
     logging.basicConfig(
-        level=getattr(logging, os.getenv('CRCLI_LOG_LEVEL', 'DEBUG')),
+        level=getattr(logging, os.getenv('CRCLI_LOG_LEVEL', 'INFO')),
         format='%(levelname)s: %(name)s: %(message)s'
     )
 
