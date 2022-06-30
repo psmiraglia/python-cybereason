@@ -19,7 +19,9 @@
 # SOFTWARE.
 
 from pycybereason.app.policies import PoliciesSubcommand  # noqa
+from pycybereason.app.sensors import SensorsSubcommand  # noqa
 
 _all_ = [
-    'PoliciesSubcommand'
+    'PoliciesSubcommand',
+    'SensorsSubcommand',
 ]

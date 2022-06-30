@@ -28,9 +28,8 @@ import sys
 from typing import Dict
 
 from pycybereason import version
-from pycybereason.actions import SensorsActions
 from pycybereason.api import Cybereason
-from pycybereason.app import PoliciesSubcommand
+from pycybereason.app import PoliciesSubcommand, SensorsSubcommand
 
 LOG = logging.getLogger(__name__)
 
@@ -49,43 +48,6 @@ def logo():
  ''')  # noqa
 
 
-def _parse_cfg_file(cfg_file: str) -> Dict:
-    cfg = {}
-    if not os.path.exists(cfg_file):
-        LOG.error(f'{cfg_file} not found')
-        sys.exit(1)
-    else:
-        with open(cfg_file, 'r') as fp:
-            cfg = json.load(fp)
-            fp.close()
-    return cfg
-
-
-def _filters(filters: str) -> Dict:
-    f = None
-
-    try:
-        if filters.startswith('@'):
-            # load filters from file
-            ffile = filters[1:]
-            if not os.path.exists(ffile):
-                LOG.error(f'{ffile} does not exist')
-            else:
-                LOG.debug(f'Load filters from file ({ffile})')
-                with open(ffile, 'r') as fp:
-                    f = json.load(fp)
-                    fp.close()
-        else:
-            # load filters from string
-            LOG.debug(f'Load filters from string ({filters})')
-            f = json.loads(filters)
-    except Exception as e:
-        LOG.error(f'Unable to load filters: {e}')
-        sys.exit(1)
-
-    return f
-
-
 def parse_connection_options(args: argparse.Namespace) -> Dict:
     opts = {}
     keys = ['server', 'username', 'password']
@@ -99,7 +61,14 @@ def parse_connection_options(args: argparse.Namespace) -> Dict:
 
     # read from config file
     if args.conf:
-        cfg = _parse_cfg_file(args.conf)
+        cfg = {}
+        if not os.path.exists(args.conf):
+            print(f'[E] Configuration file not found: {args.conf}')
+            sys.exit(1)
+        else:
+            with open(args.conf, 'r') as fp:
+                cfg = json.load(fp)
+                fp.close()
         for k in keys:
             if k in cfg:
                 LOG.debug(f'Reading {k} from file: {args.conf}')
@@ -115,10 +84,10 @@ def parse_connection_options(args: argparse.Namespace) -> Dict:
     # check values
     for o in keys:
         if o not in opts:
-            LOG.error(f'Option is missing: {o}')
+            print(f'[E] Option is missing: {o}')
             sys.exit(1)
         if not opts[o]:
-            LOG.error(f'Option must have a value: {o}')
+            print(f'[E] Option must have a value: {o}')
             sys.exit(1)
 
     return opts
@@ -131,19 +100,17 @@ def do_policies(args: argparse.Namespace, api: Cybereason) -> None:
     elif args.policies_action == 'dump':
         cmd.dump(args.policy_id, args.out_file)
     elif args.policies_action == 'compare':
-        cmd.compare(args.a, args.b, args.out_file)
+        cmd.compare(args.policy_a, args.policy_b, args.out_file)
     else:
         LOG.error(f'Unknown action: {args.policies_action}')
 
 
 def do_sensors(args: argparse.Namespace, api: Cybereason) -> None:
+    cmd = SensorsSubcommand(api)
     if args.sensors_action == 'query':
-        filters = _filters(args.filters)
-        a = SensorsActions(api)
-        a.query(filters)
+        cmd.query(args.filters)
     elif args.sensors_action == 'logs':
-        sensors = args.sensors
-        LOG.info(f'Getting logs for sensors: {sensors}')
+        cmd.logs(args.sensors)
     else:
         LOG.error(f'Unknown action: {args.sensors_action}')
 
@@ -183,9 +150,9 @@ if __name__ == '__main__':
     policies_dump.add_argument('--out-file')
     # policies compare <options>
     policies_compare = policies_action.add_parser('compare')
-    policies_compare.add_argument('-a')
-    policies_compare.add_argument('-b')
-    policies_compare.add_argument('-o', '--out-file')
+    policies_compare.add_argument('--policy-a', '-a')
+    policies_compare.add_argument('--policy-b', '-b')
+    policies_compare.add_argument('--out-file', '-o')
 
     # parse arguments
     args = root_parser.parse_args()
