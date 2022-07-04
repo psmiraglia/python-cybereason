@@ -108,7 +108,12 @@ def do_policies(args: argparse.Namespace, api: Cybereason) -> None:
 def do_sensors(args: argparse.Namespace, api: Cybereason) -> None:
     cmd = SensorsSubcommand(api)
     if args.sensors_action == 'query':
-        cmd.query(args.filters)
+        cmd.query(
+            args.filters,
+            args.os_type,
+            args.out_file,
+            args.status
+        )
     elif args.sensors_action == 'logs':
         cmd.logs(args.sensors)
     else:
@@ -133,6 +138,13 @@ if __name__ == '__main__':
     sensors_query = sensors_action.add_parser('query')
     sensors_query.add_argument('--filters')
     sensors_query.add_argument('--out-file')
+    status_choices = ['Online', 'Offline', 'Stale', 'Archived']
+    sensors_query.add_argument('--status', choices=status_choices,
+                               default=None, nargs='+')
+    os_choices = ['UNKNOWN_OS', 'WINDOWS', 'OSX', 'LINUX']
+    sensors_query.add_argument('--os-type', choices=os_choices,
+                               default=None, nargs='+')
+
     # sensors logs <opions>
     sensors_logs = sensors_action.add_parser('logs')
     sensors_logs.add_argument('--sensors', nargs='+', default=None)

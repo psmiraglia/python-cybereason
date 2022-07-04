@@ -33,7 +33,7 @@ class SensorsSubcommand(object):
     def __init__(self, api, *args, **kwargs):
         self.api = api
 
-    def query(self, filters: str) -> None:
+    def query(self, filters: str, os_type: str, out_file: str, status: str) -> None:  # noqa
         def _filters(filters: str) -> List[Dict]:
             f = []
             try:
@@ -65,7 +65,22 @@ class SensorsSubcommand(object):
 
         sensors = []
         try:
-            f = _filters(filters)
+            f = []
+            if status or os_type:
+                if status:
+                    f.append({
+                        'fieldName': 'status',
+                        'operator': 'EqualsIgnoreCase',
+                        'values': status
+                    })
+                if os_type:
+                    f.append({
+                        'fieldName': 'osType',
+                        'operator': 'EqualsIgnoreCase',
+                        'values': os_type
+                    })
+            else:
+                f = _filters(filters)
             sensors = self.api.sensors.query(f)
             for s in sensors:
                 print(f'(*) Sensor: {s["machineName"]} ({s["sensorId"]})')
