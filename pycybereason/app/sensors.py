@@ -18,14 +18,58 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
+import csv
 import json
 import logging
 import os
 import sys
 from typing import Dict, List
 
+from tabulate import tabulate
+
 # setup logging
 LOG = logging.getLogger(__name__)
+
+
+def _as_table(values, headers):
+    tablefmt = 'pretty'
+    colalign = []
+
+    # build headers dictionary
+    _headers = {}
+    for k in headers:
+        _headers[k] = k
+        colalign.append('left')
+
+    # filter values
+    _values = []
+    for v in values:
+        _v = {}
+        for k in headers:
+            _v[k] = v[k]
+        _values.append(_v)
+
+    print(tabulate(_values, _headers, tablefmt, colalign=colalign))
+
+
+def _as_csv(values: List[Dict], headers: List[str],
+            out_file: str = None) -> None:
+    # init CSV writer
+    fp = None
+    if out_file:
+        fp = open(out_file, 'w')
+        w = csv.writer(fp, quotechar='"', quoting=csv.QUOTE_NONNUMERIC)
+    else:
+        w = csv.writer(sys.stdout, quotechar='"', quoting=csv.QUOTE_NONNUMERIC)
+
+    # wite contents
+    w.writerow(headers)
+    for v in values:
+        w.writerow([v[k] for k in headers])
+
+    # close file pointer (if needed...)
+    if fp:
+        fp.close()
 
 
 class SensorsSubcommand(object):
@@ -33,7 +77,7 @@ class SensorsSubcommand(object):
     def __init__(self, api, *args, **kwargs):
         self.api = api
 
-    def query(self, filters: str, os_type: str, out_file: str, status: str) -> None:  # noqa
+    def query(self, cols: str, filters: str, os_type: str, out_file: str, out_form: str, status: str) -> None:  # noqa
         def _filters(filters: str) -> List[Dict]:
             f = []
             try:
@@ -82,9 +126,13 @@ class SensorsSubcommand(object):
             else:
                 f = _filters(filters)
             sensors = self.api.sensors.query(f)
-            for s in sensors:
-                print(f'(*) Sensor: {s["machineName"]} ({s["sensorId"]})')
-            print(f'(*) Number of sensors: {len(sensors)}')
+            if out_form == 'CSV':
+                _as_csv(sensors, cols, out_file)
+                if out_file:
+                    print(f'(*) Query results saved on {out_file}')
+            else:
+                _as_table(sensors, cols)
+                print(f'(*) Number of sensors: {len(sensors)}')
         except Exception as e:
             LOG.error(e)
 

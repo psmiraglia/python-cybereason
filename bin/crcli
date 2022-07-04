@@ -109,9 +109,11 @@ def do_sensors(args: argparse.Namespace, api: Cybereason) -> None:
     cmd = SensorsSubcommand(api)
     if args.sensors_action == 'query':
         cmd.query(
+            args.cols,
             args.filters,
             args.os_type,
             args.out_file,
+            args.out_form,
             args.status
         )
     elif args.sensors_action == 'logs':
@@ -144,6 +146,9 @@ if __name__ == '__main__':
     os_choices = ['UNKNOWN_OS', 'WINDOWS', 'OSX', 'LINUX']
     sensors_query.add_argument('--os-type', choices=os_choices,
                                default=None, nargs='+')
+    sensors_query.add_argument('--cols', default=['machineName'], nargs='+')
+    sensors_query.add_argument('--out-form', choices=['TABLE', 'CSV'],
+                               default='TABLE')
 
     # sensors logs <opions>
     sensors_logs = sensors_action.add_parser('logs')
