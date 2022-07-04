@@ -82,7 +82,7 @@ INFO: pycybereason.app.policies: Policy dump saved: policy-f5f5ed9e-d8a3-4621-b7
 Query sensors by loading filters from file
 
 ~~~
-$ CRCLI_LOG_LEVEL=INFO crcli -c conf.json sensors query --filters @filters.json
+$ crcli -c conf.json sensors query --filters @filters.json
 
                    _____      _
                   / ____|    | |
@@ -94,8 +94,34 @@ $ CRCLI_LOG_LEVEL=INFO crcli -c conf.json sensors query --filters @filters.json
      |_|    |___/       |___/  v0.1a0
 
 
-INFO: pycybereason.actions.sensors: Sensor: sql03
-INFO: pycybereason.actions.sensors: Sensor: sql12
++---------------+
+| machineName   |
++---------------+
+| sql03         |
+| sql12         |
++---------------+
+~~~
+
+Query sensors by loading filters from file and by specifying details to be shown
+
+~~~
+$ crcli -c conf.json sensors query --filters @filters.json --cols machineName osType status
+
+                   _____      _
+                  / ____|    | |
+      _ __  _   _| |    _   _| |__   ___ _ __ ___  __ _ ___  ___  _ __
+     | '_ \| | | | |   | | | | '_ \ / _ \ '__/ _ \/ _` / __|/ _ \| '_ \
+     | |_) | |_| | |___| |_| | |_) |  __/ | |  __/ (_| \__ \ (_) | | | |
+     | .__/ \__, |\_____\__, |_.__/ \___|_|  \___|\__,_|___/\___/|_| |_|
+     | |     __/ |       __/ |
+     |_|    |___/       |___/  v0.1a0
+
++---------------+---------+--------+
+| machineName   | osType  | status |
++---------------+---------+--------+
+| sql03         | WINDOWS | Stale  |
+| sql12         | WINDOWS | Stale  |
++---------------+---------+--------+
 ~~~
 
 Compare policies (interactive)
