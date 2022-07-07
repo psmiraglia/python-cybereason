@@ -22,6 +22,7 @@ import logging
 
 from restfly.session import APISession
 
+from pycybereason.api.ping import Ping
 from pycybereason.api.policies import Policies
 from pycybereason.api.sensors import Sensors
 
@@ -54,3 +55,7 @@ class Cybereason(APISession):
     @property
     def policies(self):
         return Policies(self)
+
+    @property
+    def ping(self):
+        return Ping(self)

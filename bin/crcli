@@ -122,6 +122,15 @@ def do_sensors(args: argparse.Namespace, api: Cybereason) -> None:
         LOG.error(f'Unknown action: {args.sensors_action}')
 
 
+def do_ping(args: argparse.Namespace, api: Cybereason) -> None:
+    if args.version:
+        v = api.ping.version()
+        print(f'[*] Cybereason version: {v}')
+    if args.uptime:
+        v = api.ping.uptime()
+        print(f'[*] Platform uptime: {v}')
+
+
 if __name__ == '__main__':
     logo()
 
@@ -171,6 +180,11 @@ if __name__ == '__main__':
     policies_compare.add_argument('--policy-b', '-b')
     policies_compare.add_argument('--out-file', '-o')
 
+    # ping <options>
+    ping_module = subcommand.add_parser('ping')
+    ping_module.add_argument('--version', action='store_true')
+    ping_module.add_argument('--uptime', action='store_true')
+
     # parse arguments
     args = root_parser.parse_args()
 
@@ -191,6 +205,8 @@ if __name__ == '__main__':
             do_sensors(args, api)
         elif args.subcommand == 'policies':
             do_policies(args, api)
+        elif args.subcommand == 'ping':
+            do_ping(args, api)
         else:
             LOG.error(f'Invalid subcommand ({args.subcommand})')
             sys.exit(1)
