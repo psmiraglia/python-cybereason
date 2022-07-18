@@ -170,3 +170,24 @@ $ crcli -c conf.json policies compare -a 9034336c-0a4e-4461-b93b-f2153a55ed96 -b
  
 Comparison saved to mycompare.txt
 ~~~
+
+Upgrade sensors
+
+~~~
+$ crcli -c conf.json sensors upgrade --filters @filters.json 
+
+                   _____      _
+                  / ____|    | |
+      _ __  _   _| |    _   _| |__   ___ _ __ ___  __ _ ___  ___  _ __
+     | '_ \| | | | |   | | | | '_ \ / _ \ '__/ _ \/ _` / __|/ _ \| '_ \
+     | |_) | |_| | |___| |_| | |_) |  __/ | |  __/ (_| \__ \ (_) | | | |
+     | .__/ \__, |\_____\__, |_.__/ \___|_|  \___|\__,_|___/\___/|_| |_|
+     | |     __/ |       __/ |
+     |_|    |___/       |___/  v0.1a0
+
+ 
+[*] Scheduling upgrate for
+[-]   sql03 (version: 20.2.222.0, id: 112233445566778899112233:PYLUMCLIENT_ANTANI_SQL03_0050568611AA)
+[-]   sql12 (version: 20.1.343.0, id: 112233445566778899112233:PYLUMCLIENT_ANTANI_SQL12_00505686BB22)
+Should I proceed? [y/n]
+~~~
