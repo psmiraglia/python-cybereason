@@ -52,3 +52,9 @@ class Sensors(APIEndpoint):
             LOG.debug(f'Fetched {len(sensors)}/{resp["totalResults"]} sensors')
 
         return sensors
+
+    def upgrade(self, sensors_ids: List = None, filters: Dict = None) -> Dict:
+        payload = {'sensorsIds': sensors_ids if sensors_ids else None,
+                   'filters': filters if filters else None}
+        resp = self._post('action/upgrade', json=payload).json()
+        return resp

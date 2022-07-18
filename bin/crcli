@@ -118,6 +118,8 @@ def do_sensors(args: argparse.Namespace, api: Cybereason) -> None:
         )
     elif args.sensors_action == 'logs':
         cmd.logs(args.sensors)
+    elif args.sensors_action == 'upgrade':
+        cmd.upgrade(args)
     else:
         LOG.error(f'Unknown action: {args.sensors_action}')
 
@@ -163,6 +165,12 @@ if __name__ == '__main__':
     sensors_logs = sensors_action.add_parser('logs')
     sensors_logs.add_argument('--sensors', nargs='+', default=None)
     sensors_logs.add_argument('--out-file')
+    # sensors upgrade <options>
+    sensors_upgrade = sensors_action.add_parser('upgrade')
+    sensors_upgrade.add_argument('--filters')
+    sensors_upgrade.add_argument('--limit', default='100')
+    sensors_upgrade.add_argument('--assume-yes', action='store_true')
+    sensors_upgrade.add_argument('--out-file', '-o')
 
     # policies <action> <options>
     policies_module = subcommand.add_parser('policies')

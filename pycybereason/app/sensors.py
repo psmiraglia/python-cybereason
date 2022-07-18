@@ -18,7 +18,9 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
+import argparse
 import csv
+import datetime
 import json
 import logging
 import os
@@ -72,41 +74,42 @@ def _as_csv(values: List[Dict], headers: List[str],
         fp.close()
 
 
+def _filters(filters: str) -> List[Dict]:
+    f = []
+    try:
+        if not filters:
+            prompt = '[?] The query will return all the sensors. Should I proceed? [y/N] '  # noqa
+            a = input(prompt).lower()
+            while a not in ['y', 'n', '']:
+                a = input(prompt).lower()
+            if (a == 'n') or (not a):
+                sys.exit(0)
+        elif filters.startswith('@'):
+            # load filters from file
+            ffile = filters[1:]
+            if not os.path.exists(ffile):
+                LOG.error(f'{ffile} does not exist')
+            else:
+                LOG.debug(f'Load filters from file ({ffile})')
+                with open(ffile, 'r') as fp:
+                    f = json.load(fp)
+                    fp.close()
+        else:
+            # load filters from string
+            LOG.debug(f'Load filters from string ({filters})')
+            f = json.loads(filters)
+    except Exception as e:
+        LOG.error(f'Unable to load filters: {e}')
+        sys.exit(1)
+    return f
+
+
 class SensorsSubcommand(object):
 
     def __init__(self, api, *args, **kwargs):
         self.api = api
 
     def query(self, cols: str, filters: str, os_type: str, out_file: str, out_form: str, status: str) -> None:  # noqa
-        def _filters(filters: str) -> List[Dict]:
-            f = []
-            try:
-                if not filters:
-                    prompt = '[?] The query will return all the sensors. Should I proceed? [y/N] '  # noqa
-                    a = input(prompt).lower()
-                    while a not in ['y', 'n', '']:
-                        a = input(prompt).lower()
-                    if (a == 'n') or (not a):
-                        sys.exit(0)
-                elif filters.startswith('@'):
-                    # load filters from file
-                    ffile = filters[1:]
-                    if not os.path.exists(ffile):
-                        LOG.error(f'{ffile} does not exist')
-                    else:
-                        LOG.debug(f'Load filters from file ({ffile})')
-                        with open(ffile, 'r') as fp:
-                            f = json.load(fp)
-                            fp.close()
-                else:
-                    # load filters from string
-                    LOG.debug(f'Load filters from string ({filters})')
-                    f = json.loads(filters)
-            except Exception as e:
-                LOG.error(f'Unable to load filters: {e}')
-                sys.exit(1)
-            return f
-
         sensors = []
         try:
             f = []
@@ -139,3 +142,48 @@ class SensorsSubcommand(object):
     def logs(self, sensors: List[str]) -> None:
         for s in sensors:
             print(f'(*) Getting log for sensor: {s}')
+
+    def upgrade(self, args: argparse.Namespace) -> None:
+        limit = int(args.limit)
+        filters = args.filters
+        assume_yes = args.assume_yes
+        out_file = args.out_file
+
+        # get list of sensors
+        f = _filters(filters)
+        sensors = self.api.sensors.query(f)
+        if len(sensors) > limit:
+            sensors = sensors[0:limit]
+
+        # ask for confirmation
+        print('[*] Scheduling upgrate for')
+        for s in sensors:
+            print(f'[-]   {s["machineName"]} (version: {s["version"]}, id: {s["sensorId"]})')  # noqa
+
+        choice = 'y'
+        if not assume_yes:
+            prompt = 'Should I proceed? [y/n] '
+            choice = input(prompt)
+            while choice not in ['y', 'n', 'Y', 'N']:
+                choice = input(prompt)
+
+        # schedule th eupgrade (if confirmed)
+        if choice.lower() == 'y':
+            sensors_ids = [s['sensorId'] for s in sensors]
+            resp = self.api.sensors.upgrade(sensors_ids=sensors_ids)
+
+            # save references
+            now = datetime.datetime.now().strftime('%Y%m%d%H%M%S')
+            batch_id = resp['batchId'] if 'batchId' in resp else 'None'
+            action_type = resp['actionType'] if 'actionType' in resp else 'None'  # noqa
+            print(f'[*] New batch: {action_type} ({batch_id})')
+
+            _out_file = f'batch-{action_type}-{now}.json'
+            if out_file:
+                _out_file = out_file
+            with open(_out_file, 'w') as fp:
+                json.dump(resp, fp)
+                fp.close()
+            print(f'[*] Job details saved on {_out_file}')
+        else:
+            print('[*] Upgrade aborted')
