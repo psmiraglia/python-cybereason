@@ -1,5 +1,7 @@
 default: install
 
+style: flake8 isort-diff
+
 flake8:
 	flake8 setup.py bin/* pycybereason/*.py pycybereason/**/*.py
 
