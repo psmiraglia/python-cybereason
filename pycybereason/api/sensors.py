@@ -58,3 +58,18 @@ class Sensors(APIEndpoint):
                    'filters': filters if filters else None}
         resp = self._post('action/upgrade', json=payload).json()
         return resp
+
+    def batch(self, batch_id: int) -> Dict:
+        path = f'query/sensorsOfAction/{batch_id}'
+        payload = {
+            'filters': [],
+            'limit': 0,
+            'offset': 0,
+            'batchId': str(batch_id)
+        }
+        resp = {}
+        try:
+            resp = self._post(path, json=payload).json()
+        except Exception as e:
+            LOG.error(e)
+        return resp

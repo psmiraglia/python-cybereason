@@ -148,42 +148,78 @@ class SensorsSubcommand(object):
         filters = args.filters
         assume_yes = args.assume_yes
         out_file = args.out_file
+        batch_file = args.batch_file
 
-        # get list of sensors
-        f = _filters(filters)
-        sensors = self.api.sensors.query(f)
-        if len(sensors) > limit:
-            sensors = sensors[0:limit]
-
-        # ask for confirmation
-        print('[*] Scheduling upgrate for')
-        for s in sensors:
-            print(f'[-]   {s["machineName"]} (version: {s["version"]}, id: {s["sensorId"]})')  # noqa
-
-        choice = 'y'
-        if not assume_yes:
-            prompt = 'Should I proceed? [y/n] '
-            choice = input(prompt)
-            while choice not in ['y', 'n', 'Y', 'N']:
-                choice = input(prompt)
-
-        # schedule th eupgrade (if confirmed)
-        if choice.lower() == 'y':
-            sensors_ids = [s['sensorId'] for s in sensors]
-            resp = self.api.sensors.upgrade(sensors_ids=sensors_ids)
-
-            # save references
-            now = datetime.datetime.now().strftime('%Y%m%d%H%M%S')
-            batch_id = resp['batchId'] if 'batchId' in resp else 'None'
-            action_type = resp['actionType'] if 'actionType' in resp else 'None'  # noqa
-            print(f'[*] New batch: {action_type} ({batch_id})')
-
-            _out_file = f'batch-{action_type}-{now}.json'
-            if out_file:
-                _out_file = out_file
-            with open(_out_file, 'w') as fp:
-                json.dump(resp, fp)
+        # get batch info
+        if batch_file:
+            batch_data = {}
+            with open(batch_file, 'r') as fp:
+                batch_data = json.load(fp)
                 fp.close()
-            print(f'[*] Job details saved on {_out_file}')
+
+            batch_id = batch_data.get('batchId')
+            if not batch_id:
+                print(f'[!] Invalid batch file: {batch_file}')
+                sys.exit(1)
+            resp = self.api.sensors.batch(batch_id)
+
+            sensors = resp.get('sensors')
+            if not sensors:
+                print('[!] Unexpected response: sensors key is missing')
+                sys.exit(1)
+
+            print('[*] Outdated sensors')
+            for s in [_s for _s in sensors if _s['outdated']]:
+                name = s.get('machineName')
+                v = s.get('version')
+                sid = s.get('sensorId')
+                print(f'[-] {name} (version: {v}, id: {sid})')
+
+            print('[*] Updated sensors')
+            for s in [_s for _s in sensors if not _s['outdated']]:
+                name = s.get('machineName')
+                v = s.get('version')
+                sid = s.get('sensorId')
+                print(f'[-] {name} (version: {v}, id: {sid})')
         else:
-            print('[*] Upgrade aborted')
+            # get list of sensors
+            f = _filters(filters)
+            sensors = self.api.sensors.query(f)
+            if len(sensors) > limit:
+                sensors = sensors[0:limit]
+
+            # ask for confirmation
+            print('[*] Scheduling upgrate for')
+            for s in sensors:
+                name = s.get('machineName')
+                v = s.get('version')
+                sid = s.get('sensorId')
+                print(f'[-]   {name} (version: {v}, id: {sid})')
+
+            choice = 'y'
+            if not assume_yes:
+                prompt = 'Should I proceed? [y/n] '
+                choice = input(prompt)
+                while choice not in ['y', 'n', 'Y', 'N']:
+                    choice = input(prompt)
+
+            # schedule th eupgrade (if confirmed)
+            if choice.lower() == 'y':
+                sensors_ids = [s['sensorId'] for s in sensors]
+                resp = self.api.sensors.upgrade(sensors_ids=sensors_ids)
+
+                # save references
+                now = datetime.datetime.now().strftime('%Y%m%d%H%M%S')
+                batch_id = resp['batchId'] if 'batchId' in resp else 'None'
+                action_type = resp['actionType'] if 'actionType' in resp else 'None'  # noqa
+                print(f'[*] New batch: {action_type} ({batch_id})')
+
+                _out_file = f'batch-{action_type}-{now}.json'
+                if out_file:
+                    _out_file = out_file
+                with open(_out_file, 'w') as fp:
+                    json.dump(resp, fp)
+                    fp.close()
+                print(f'[*] Job details saved on {_out_file}')
+            else:
+                print('[*] Upgrade aborted')

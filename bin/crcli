@@ -171,6 +171,7 @@ if __name__ == '__main__':
     sensors_upgrade.add_argument('--limit', default='100')
     sensors_upgrade.add_argument('--assume-yes', action='store_true')
     sensors_upgrade.add_argument('--out-file', '-o')
+    sensors_upgrade.add_argument('--batch-file')
 
     # policies <action> <options>
     policies_module = subcommand.add_parser('policies')
