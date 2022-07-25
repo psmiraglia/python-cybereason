@@ -18,10 +18,12 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
+from pycybereason.app.malops import MalopsSubcommand  # noqa
 from pycybereason.app.policies import PoliciesSubcommand  # noqa
 from pycybereason.app.sensors import SensorsSubcommand  # noqa
 
 _all_ = [
+    'MalopsSubcommand',
     'PoliciesSubcommand',
     'SensorsSubcommand',
 ]

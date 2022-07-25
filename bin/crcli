@@ -29,7 +29,11 @@ from typing import Dict
 
 from pycybereason import version
 from pycybereason.api import Cybereason
-from pycybereason.app import PoliciesSubcommand, SensorsSubcommand
+from pycybereason.app import (
+    MalopsSubcommand,
+    PoliciesSubcommand,
+    SensorsSubcommand,
+)
 
 LOG = logging.getLogger(__name__)
 
@@ -194,6 +198,17 @@ if __name__ == '__main__':
     ping_module.add_argument('--version', action='store_true')
     ping_module.add_argument('--uptime', action='store_true')
 
+    # malops <action> <options>
+    malops_module = subcommand.add_parser('malops')
+    malops_action = malops_module.add_subparsers(dest='malops_action')
+    # malops inbox <options>
+    malops_inbox = malops_action.add_parser('inbox')
+    malops_inbox.add_argument('--start-time', required=True)
+    malops_inbox.add_argument('--end-time', required=True)
+    malops_inbox.add_argument('--group-ids', default=[])
+    malops_inbox.add_argument('--filter', default=None)
+    malops_inbox.add_argument('--show-machines', action='store_true')
+
     # parse arguments
     args = root_parser.parse_args()
 
@@ -216,6 +231,12 @@ if __name__ == '__main__':
             do_policies(args, api)
         elif args.subcommand == 'ping':
             do_ping(args, api)
+        elif args.subcommand == 'malops':
+            cmd = MalopsSubcommand(api, c_opts)
+            try:
+                getattr(cmd, args.malops_action)(args)
+            except Exception as e:
+                LOG.error(e)
         else:
             LOG.error(f'Invalid subcommand ({args.subcommand})')
             sys.exit(1)
