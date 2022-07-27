@@ -191,3 +191,65 @@ $ crcli -c conf.json sensors upgrade --filters @filters.json
 [-]   sql12 (version: 20.1.343.0, id: 112233445566778899112233:PYLUMCLIENT_ANTANI_SQL12_00505686BB22)
 Should I proceed? [y/n]
 ~~~
+
+Show malops in a time range
+
+~~~
+$ crcli -c conf.json malops inbox --start-time '20220722T000000' --end-time '20220722T235959'
+
+                   _____      _
+                  / ____|    | |
+      _ __  _   _| |    _   _| |__   ___ _ __ ___  __ _ ___  ___  _ __
+     | '_ \| | | | |   | | | | '_ \ / _ \ '__/ _ \/ _` / __|/ _ \| '_ \
+     | |_) | |_| | |___| |_| | |_) |  __/ | |  __/ (_| \__ \ (_) | | | |
+     | .__/ \__, |\_____\__, |_.__/ \___|_|  \___|\__,_|___/\___/|_| |_|
+     | |     __/ |       __/ |
+     |_|    |___/       |___/  v0.1a0
+
+ 
+[MALOP] system.componentmodel.dataannotations.ni.dll (guid: jVLbH23o4vyybRY7, url: https://antani.cybereason.net/#/detection-malop/jVLbH23o4vyybRY7)
+[MALOP] windowsbase.ni.dll (guid: A0Qzt3G1yGIkYci3, url: https://antani.cybereason.net/#/detection-malop/A0Qzt3G1yGIkYci3)
+~~~
+
+Show malops in a time range, with details of affected machines
+
+~~~
+$ crcli -c conf.json malops inbox --start-time '20220722T000000' --end-time '20220722T235959' --show-machines
+
+                   _____      _
+                  / ____|    | |
+      _ __  _   _| |    _   _| |__   ___ _ __ ___  __ _ ___  ___  _ __
+     | '_ \| | | | |   | | | | '_ \ / _ \ '__/ _ \/ _` / __|/ _ \| '_ \
+     | |_) | |_| | |___| |_| | |_) |  __/ | |  __/ (_| \__ \ (_) | | | |
+     | .__/ \__, |\_____\__, |_.__/ \___|_|  \___|\__,_|___/\___/|_| |_|
+     | |     __/ |       __/ |
+     |_|    |___/       |___/  v0.1a0
+
+ 
+[MALOP] system.componentmodel.dataannotations.ni.dll (guid: jVLbH23o4vyybRY7, url: https://antani.cybereason.net/#/detection-malop/jVLbH23o4vyybRY7)
+[MALOP > MACHINE] sql03
+[MALOP > MACHINE] sql12
+[MALOP] windowsbase.ni.dll (guid: A0Qzt3G1yGIkYci3, url: https://antani.cybereason.net/#/detection-malop/A0Qzt3G1yGIkYci3)
+[MALOP > MACHINE] sql03
+[MALOP > MACHINE] sql12
+~~~
+
+Show malops in a time range, with details of affected machines and by filtering on the malop title
+
+~~~
+$ crcli -c conf.json malops inbox --start-time '20220722T000000' --end-time '20220722T235959' --show-machines --filter 'dataannotations.ni.dll'
+
+                   _____      _
+                  / ____|    | |
+      _ __  _   _| |    _   _| |__   ___ _ __ ___  __ _ ___  ___  _ __
+     | '_ \| | | | |   | | | | '_ \ / _ \ '__/ _ \/ _` / __|/ _ \| '_ \
+     | |_) | |_| | |___| |_| | |_) |  __/ | |  __/ (_| \__ \ (_) | | | |
+     | .__/ \__, |\_____\__, |_.__/ \___|_|  \___|\__,_|___/\___/|_| |_|
+     | |     __/ |       __/ |
+     |_|    |___/       |___/  v0.1a0
+
+ 
+[MALOP] system.componentmodel.dataannotations.ni.dll (guid: jVLbH23o4vyybRY7, url: https://antani.cybereason.net/#/detection-malop/jVLbH23o4vyybRY7)
+[MALOP > MACHINE] sql03
+[MALOP > MACHINE] sql12
+~~~
